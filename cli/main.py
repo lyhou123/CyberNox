@@ -264,5 +264,49 @@ def config(config_file):
             click.echo(ColoredFormatter.error(f"❌ Failed to create configuration: {e}"))
 
 
+@cli.command()
+@click.option('--host', default='127.0.0.1', help='Host to bind to')
+@click.option('--port', type=int, default=5000, help='Port to listen on')
+@click.option('--production', is_flag=True, help='Run in production mode')
+@click.option('--public', is_flag=True, help='Allow public access (bind to 0.0.0.0)')
+def serve(host, port, production, public):
+    """Start the CyberNox API server"""
+    
+    # Set host for public access
+    if public:
+        host = '0.0.0.0'
+        click.echo(ColoredFormatter.warning("⚠️  WARNING: Server will be accessible from any network interface!"))
+    
+    debug = not production
+    mode = "Production" if production else "Development"
+    
+    click.echo(ColoredFormatter.header("🚀 Starting CyberNox API Server"))
+    click.echo(ColoredFormatter.info(f"🌐 URL: http://{host}:{port}"))
+    click.echo(ColoredFormatter.info(f"🔧 Mode: {mode}"))
+    click.echo(ColoredFormatter.info(f"📊 Debug: {'Enabled' if debug else 'Disabled'}"))
+    
+    try:
+        # Import here to avoid circular imports
+        from api.app import create_app
+        
+        app = create_app('development' if debug else 'production')
+        
+        click.echo(ColoredFormatter.success("✅ API server initialized"))
+        click.echo(ColoredFormatter.info("Press Ctrl+C to stop the server"))
+        
+        # Start the server
+        app.run(
+            host=host,
+            port=port,
+            debug=debug,
+            threaded=True
+        )
+        
+    except KeyboardInterrupt:
+        click.echo(ColoredFormatter.info("\n🛑 Server stopped by user"))
+    except Exception as e:
+        click.echo(ColoredFormatter.error(f"❌ Failed to start server: {e}"))
+
+
 if __name__ == '__main__':
     cli()

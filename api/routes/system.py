@@ -4,12 +4,18 @@ Status, health checks, and system information endpoints
 """
 
 from flask import Blueprint, jsonify, redirect, url_for
-import psutil
 import platform
 from datetime import datetime
 
 from ..middleware.auth import auth_required
 from utils.logger import logger
+
+try:
+    import psutil
+    PSUTIL_AVAILABLE = True
+except ImportError:
+    PSUTIL_AVAILABLE = False
+    logger.warning("psutil not available, system monitoring disabled")
 
 system_bp = Blueprint('system', __name__)
 
@@ -36,24 +42,31 @@ def status():
         }
         
         # Get system resources
-        memory = psutil.virtual_memory()
-        disk = psutil.disk_usage('/')
-        
-        resources = {
-            'cpu_percent': psutil.cpu_percent(interval=1),
-            'memory': {
-                'total': memory.total,
-                'available': memory.available,
-                'percent': memory.percent,
-                'used': memory.used
-            },
-            'disk': {
-                'total': disk.total,
-                'used': disk.used,
-                'free': disk.free,
-                'percent': (disk.used / disk.total) * 100
+        if PSUTIL_AVAILABLE:
+            memory = psutil.virtual_memory()
+            disk = psutil.disk_usage('/')
+            
+            resources = {
+                'cpu_percent': psutil.cpu_percent(interval=1),
+                'memory': {
+                    'total': memory.total,
+                    'available': memory.available,
+                    'percent': memory.percent,
+                    'used': memory.used
+                },
+                'disk': {
+                    'total': disk.total,
+                    'used': disk.used,
+                    'free': disk.free,
+                    'percent': (disk.used / disk.total) * 100
+                }
             }
-        }
+        else:
+            resources = {
+                'cpu_percent': 'N/A (psutil not available)',
+                'memory': 'N/A (psutil not available)',
+                'disk': 'N/A (psutil not available)'
+            }
         
         return jsonify({
             'status': 'online',
