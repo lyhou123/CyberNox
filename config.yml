@@ -1,0 +1,46 @@
+# CyberNox Configuration File
+
+# General Settings
+general:
+  debug: false
+  log_level: INFO
+  output_format: json  # json, text, xml
+  max_threads: 10
+  timeout: 5
+
+# Network Settings
+network:
+  user_agent: "CyberNox-Scanner/1.0"
+  default_ports: [21, 22, 23, 25, 53, 80, 110, 135, 139, 143, 443, 993, 995, 1723, 3306, 3389, 5432, 5900, 8080]
+  socket_timeout: 3
+
+# Reconnaissance Settings
+recon:
+  subdomain_wordlist: "data/wordlists/subdomains.txt"
+  max_subdomains: 1000
+  dns_servers: ["8.8.8.8", "1.1.1.1"]
+
+# Scanning Settings
+scan:
+  default_threads: 50
+  max_ports: 65535
+  scan_timeout: 1
+
+# Brute Force Settings
+brute:
+  directory_wordlist: "data/wordlists/directories.txt"
+  file_wordlist: "data/wordlists/files.txt"
+  max_requests_per_second: 10
+  follow_redirects: true
+
+# Exploit Settings
+exploit:
+  reverse_shell_timeout: 30
+  payload_directory: "data/payloads"
+
+# CVE Database Settings
+cve:
+  api_url: "https://services.nvd.nist.gov/rest/json/cves/2.0"
+  api_key: null  # Optional: Add your NVD API key for higher rate limits
+  cache_results: true
+  cache_duration: 86400  # 24 hours in seconds
