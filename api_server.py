@@ -3,7 +3,7 @@ RESTful API interface for CyberNox
 Professional web service for remote scanning and management
 """
 
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, render_template_string, redirect, url_for
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -12,15 +12,13 @@ import uuid
 from datetime import datetime, timedelta
 import jwt
 from functools import wraps
-from pathlib import Path
+
 
 # Import CyberNox modules
 from core.recon import ReconModule
-from core.scanner import PortScanner, VulnerabilityScanner
-from core.brute import DirectoryBruteforcer
+from core.scanner import PortScanner
 from core.exploit import ExploitModule
 from core.vulnscan import VulnerabilityScanner as WebVulnScanner
-from core.phishing import PhishingDetector
 from core.report import ReportGenerator
 from utils.database import db
 from utils.logger import logger
@@ -34,10 +32,10 @@ CORS(app)
 
 # Rate limiting
 limiter = Limiter(
-    app,
     key_func=get_remote_address,
     default_limits=["100 per hour"]
 )
+limiter.init_app(app)
 
 # In-memory storage for running tasks
 running_tasks = {}
@@ -107,10 +105,18 @@ def auth_required(f):
     
     return decorated
 
-@app.route('/api/v1/auth/login', methods=['POST'])
+@app.route('/api/v1/auth/login', methods=['GET', 'POST'])
 @limiter.limit("5 per minute")
 def login():
-    """Authenticate and get access token"""
+    """Login endpoint - serves form on GET, processes login on POST"""
+    
+    if request.method == 'GET':
+        # Serve the login form
+        with open('admin_login.html', 'r', encoding='utf-8') as f:
+            login_html = f.read()
+        return login_html
+    
+    # POST request - process login
     data = request.get_json()
     
     # Demo authentication - replace with real auth
@@ -124,11 +130,32 @@ def login():
         }, app.config['SECRET_KEY'], algorithm='HS256')
         
         return jsonify({
+            'success': True,
             'token': token,
-            'expires_in': 86400
+            'expires_in': 86400,
+            'redirect_url': '/api/v1/dashboard'
         })
     
-    return jsonify({'error': 'Invalid credentials'}), 401
+    return jsonify({'success': False, 'error': 'Invalid credentials'}), 401
+
+@app.route('/', methods=['GET'])
+def home():
+    """Root endpoint - API information"""
+    return jsonify({
+        'message': 'CyberNox Professional Security API',
+        'version': '1.0.0',
+        'status': 'online',
+        'documentation': {
+            'web_dashboard': 'Open web_dashboard.html in your browser',
+            'api_status': '/api/v1/status',
+            'authentication': '/api/v1/auth/login',
+            'endpoints': '/api/v1/status'
+        },
+        'demo_credentials': {
+            'username': 'admin',
+            'password': 'cybernox123'
+        }
+    })
 
 @app.route('/api/v1/status', methods=['GET'])
 def status():
@@ -400,6 +427,17 @@ def generate_report():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/v1/dashboard', methods=['GET'])
+@auth_required
+def dashboard_page():
+    """Serve the admin dashboard page"""
+    try:
+        with open('admin_dashboard.html', 'r', encoding='utf-8') as f:
+            dashboard_html = f.read()
+        return dashboard_html
+    except FileNotFoundError:
+        return jsonify({'error': 'Dashboard page not found'}), 404
+
+@app.route('/api/v1/dashboard/data', methods=['GET'])
 @auth_required
 def dashboard_data():
     """Get dashboard data"""

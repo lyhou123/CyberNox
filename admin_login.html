@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberNox - Admin Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1a237e;
+            --secondary-color: #303f9f;
+            --accent-color: #ff4444;
+            --success-color: #00c851;
+            --warning-color: #ffbb33;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 0;
+            overflow: hidden;
+            max-width: 900px;
+            width: 90%;
+            min-height: 500px;
+        }
+
+        .login-left {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-left::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="rgba(255,255,255,0.1)"/></svg>') repeat;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateX(0) translateY(0); }
+            100% { transform: translateX(-100px) translateY(-100px); }
+        }
+
+        .login-right {
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .brand-logo {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .brand-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .brand-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .feature-list li {
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .feature-list li i {
+            margin-right: 15px;
+            font-size: 1.2rem;
+        }
+
+        .login-form {
+            max-width: 400px;
+        }
+
+        .form-title {
+            color: var(--primary-color);
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-control {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px 20px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(26, 35, 126, 0.25);
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            z-index: 3;
+        }
+
+        .input-group .form-control {
+            padding-left: 55px;
+            margin-bottom: 0;
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            color: white;
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+
+        .security-features {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(26, 35, 126, 0.1);
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .alert-custom {
+            border-radius: 10px;
+            border: none;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .version-info {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            z-index: 2;
+        }
+
+        @media (max-width: 768px) {
+            .login-container {
+                margin: 20px;
+                min-height: auto;
+            }
+            
+            .login-left {
+                padding: 40px 20px;
+            }
+            
+            .login-right {
+                padding: 40px 20px;
+            }
+            
+            .brand-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="login-container">
+            <div class="row g-0">
+                <!-- Left Side - Branding -->
+                <div class="col-md-6">
+                    <div class="login-left">
+                        <div class="brand-logo">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h1 class="brand-title">CyberNox</h1>
+                        <p class="brand-subtitle">Professional Security Suite</p>
+                        
+                        <ul class="feature-list">
+                            <li><i class="fas fa-search"></i> Advanced Reconnaissance</li>
+                            <li><i class="fas fa-radar"></i> Network Scanning</li>
+                            <li><i class="fas fa-bug"></i> Vulnerability Assessment</li>
+                            <li><i class="fas fa-bomb"></i> Exploitation Tools</li>
+                            <li><i class="fas fa-chart-line"></i> Professional Reporting</li>
+                            <li><i class="fas fa-shield-virus"></i> Real-time Monitoring</li>
+                        </ul>
+                        
+                        <div class="version-info">
+                            Version 1.0.0 Professional
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Side - Login Form -->
+                <div class="col-md-6">
+                    <div class="login-right">
+                        <div class="login-form">
+                            <h2 class="form-title">
+                                <i class="fas fa-user-shield"></i> Admin Access
+                            </h2>
+                            
+                            <div id="loginAlert"></div>
+                            
+                            <form id="loginForm">
+                                <div class="input-group">
+                                    <i class="fas fa-user"></i>
+                                    <input type="text" class="form-control" id="username" placeholder="Username" required>
+                                </div>
+                                
+                                <div class="input-group">
+                                    <i class="fas fa-lock"></i>
+                                    <input type="password" class="form-control" id="password" placeholder="Password" required>
+                                </div>
+                                
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="rememberMe">
+                                    <label class="form-check-label" for="rememberMe">
+                                        Remember me for 24 hours
+                                    </label>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-login">
+                                    <span class="loading-spinner" id="loadingSpinner"></span>
+                                    <span id="loginText">
+                                        <i class="fas fa-sign-in-alt"></i> Access Dashboard
+                                    </span>
+                                </button>
+                            </form>
+                            
+                            <div class="security-features">
+                                <h6><i class="fas fa-lock"></i> Security Features</h6>
+                                <small class="text-muted">
+                                    • JWT Token Authentication<br>
+                                    • Rate Limiting Protection<br>
+                                    • Secure Session Management<br>
+                                    • Activity Logging
+                                </small>
+                            </div>
+                            
+                            <div class="text-center mt-4">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle"></i> 
+                                    Demo Credentials: admin / cybernox123
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:5000/api/v1';
+        
+        // Auto-fill demo credentials
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('username').value = 'admin';
+            document.getElementById('password').value = 'cybernox123';
+            
+            // Check if user is already logged in
+            const token = localStorage.getItem('cybernox_token');
+            if (token) {
+                // Verify token is still valid by accessing dashboard
+                fetch('/api/v1/dashboard', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'text/html'
+                    }
+                }).then(response => {
+                    if (response.ok) {
+                        // Token is valid, redirect to dashboard
+                        return response.text();
+                    } else {
+                        // Token invalid, remove it
+                        localStorage.removeItem('cybernox_token');
+                        throw new Error('Token validation failed');
+                    }
+                }).then(html => {
+                    // Replace current page with dashboard
+                    document.open();
+                    document.write(html);
+                    document.close();
+                    window.history.pushState({}, 'CyberNox Dashboard', '/api/v1/dashboard');
+                }).catch(error => {
+                    console.error('Token validation failed:', error);
+                    // Stay on login page
+                });
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
+            
+            // Show loading state
+            showLoading(true);
+            clearAlert();
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.token) {
+                    // Store token
+                    localStorage.setItem('cybernox_token', data.token);
+                    
+                    if (rememberMe) {
+                        localStorage.setItem('cybernox_remember', 'true');
+                    }
+                    
+                    // Show success message
+                    showAlert('success', '<i class="fas fa-check-circle"></i> Login successful! Redirecting to dashboard...');
+                    
+                    // Log login activity
+                    logActivity('admin_login', { username, timestamp: new Date().toISOString() });
+                    
+                    // Redirect after delay
+                    setTimeout(() => {
+                        redirectToDashboard();
+                    }, 1500);
+                    
+                } else {
+                    showAlert('danger', '<i class="fas fa-exclamation-triangle"></i> ' + (data.error || 'Login failed'));
+                    logActivity('failed_login', { username, timestamp: new Date().toISOString() });
+                }
+                
+            } catch (error) {
+                console.error('Login error:', error);
+                showAlert('danger', '<i class="fas fa-exclamation-triangle"></i> Connection error. Make sure the API server is running on port 5000.');
+            } finally {
+                showLoading(false);
+            }
+        });
+
+        function showLoading(show) {
+            const spinner = document.getElementById('loadingSpinner');
+            const text = document.getElementById('loginText');
+            const button = document.querySelector('.btn-login');
+            
+            if (show) {
+                spinner.style.display = 'inline-block';
+                text.innerHTML = 'Authenticating...';
+                button.disabled = true;
+            } else {
+                spinner.style.display = 'none';
+                text.innerHTML = '<i class="fas fa-sign-in-alt"></i> Access Dashboard';
+                button.disabled = false;
+            }
+        }
+
+        function showAlert(type, message) {
+            const alertDiv = document.getElementById('loginAlert');
+            alertDiv.innerHTML = `
+                <div class="alert alert-${type} alert-custom" role="alert">
+                    ${message}
+                </div>
+            `;
+            
+            // Auto-hide success alerts
+            if (type === 'success') {
+                setTimeout(() => {
+                    alertDiv.innerHTML = '';
+                }, 3000);
+            }
+        }
+
+        function clearAlert() {
+            document.getElementById('loginAlert').innerHTML = '';
+        }
+
+        function redirectToDashboard() {
+            // Get the stored token
+            const token = localStorage.getItem('cybernox_token');
+            
+            if (!token) {
+                showAlert('danger', '<i class="fas fa-exclamation-triangle"></i> No authentication token found. Please login again.');
+                return;
+            }
+            
+            // Use fetch to access the dashboard with the token
+            fetch('/api/v1/dashboard', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'text/html'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.text();
+                } else if (response.status === 401) {
+                    // Token expired or invalid
+                    localStorage.removeItem('cybernox_token');
+                    showAlert('danger', '<i class="fas fa-exclamation-triangle"></i> Session expired. Please login again.');
+                    throw new Error('Authentication failed');
+                } else {
+                    throw new Error('Dashboard access failed');
+                }
+            })
+            .then(html => {
+                // Replace current page with dashboard HTML
+                document.open();
+                document.write(html);
+                document.close();
+                
+                // Update URL without page reload
+                window.history.pushState({}, 'CyberNox Dashboard', '/api/v1/dashboard');
+            })
+            .catch(error => {
+                console.error('Dashboard redirect error:', error);
+                showAlert('danger', '<i class="fas fa-exclamation-triangle"></i> Failed to access dashboard. Please try again.');
+            });
+        }
+
+        function logActivity(action, data) {
+            // Store activity log in localStorage for demo
+            const activities = JSON.parse(localStorage.getItem('cybernox_activities') || '[]');
+            activities.push({
+                action,
+                data,
+                timestamp: new Date().toISOString(),
+                ip: 'localhost' // In real app, get actual IP
+            });
+            
+            // Keep only last 100 activities
+            if (activities.length > 100) {
+                activities.splice(0, activities.length - 100);
+            }
+            
+            localStorage.setItem('cybernox_activities', JSON.stringify(activities));
+        }
+
+        // Password visibility toggle
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('fa-eye') || e.target.classList.contains('fa-eye-slash')) {
+                const passwordField = document.getElementById('password');
+                const icon = e.target;
+                
+                if (passwordField.type === 'password') {
+                    passwordField.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    passwordField.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            }
+        });
+
+        // Add password visibility toggle icon
+        document.querySelector('.input-group:last-of-type').innerHTML += `
+            <i class="fas fa-eye position-absolute" style="right: 20px; top: 50%; transform: translateY(-50%); cursor: pointer; z-index: 3;"></i>
+        `;
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Alt + D for demo credentials
+            if (e.altKey && e.key === 'd') {
+                e.preventDefault();
+                document.getElementById('username').value = 'admin';
+                document.getElementById('password').value = 'cybernox123';
+                showAlert('info', '<i class="fas fa-info-circle"></i> Demo credentials loaded');
+            }
+        });
+
+        // Check API server status on load
+        fetch(`${API_BASE}/status`)
+            .then(response => {
+                if (response.ok) {
+                    console.log('✅ API server is running');
+                } else {
+                    showAlert('warning', '<i class="fas fa-exclamation-triangle"></i> API server may not be running. Please start it with: python api_server.py');
+                }
+            })
+            .catch(error => {
+                showAlert('warning', '<i class="fas fa-exclamation-triangle"></i> Cannot connect to API server. Please start it with: python api_server.py');
+            });
+    </script>
+</body>
+</html>

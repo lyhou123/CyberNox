@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberNox - Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1a237e;
+            --secondary-color: #303f9f;
+            --accent-color: #ff4444;
+            --success-color: #00c851;
+            --warning-color: #ffbb33;
+            --dark-bg: #121212;
+            --sidebar-bg: linear-gradient(135deg, #1a237e, #303f9f);
+        }
+
+        body {
+            background: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .admin-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .admin-sidebar {
+            width: 280px;
+            background: var(--sidebar-bg);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .admin-sidebar.collapsed {
+            width: 80px;
+        }
+
+        .admin-content {
+            flex: 1;
+            margin-left: 280px;
+            transition: all 0.3s ease;
+        }
+
+        .admin-content.expanded {
+            margin-left: 80px;
+        }
+
+        .sidebar-header {
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-brand {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .sidebar-nav {
+            padding: 20px 0;
+        }
+
+        .nav-item {
+            margin: 5px 15px;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 15px 20px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .nav-link i {
+            margin-right: 15px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        .admin-header {
+            background: white;
+            padding: 15px 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar-toggle {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-right: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--secondary-color);
+        }
+
+        .breadcrumb-custom {
+            background: transparent;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .admin-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 15px;
+            background: #f8f9fa;
+            border-radius: 25px;
+        }
+
+        .admin-user img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+        }
+
+        .admin-stats {
+            display: flex;
+            gap: 10px;
+        }
+
+        .stat-badge {
+            background: var(--primary-color);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .admin-main {
+            padding: 30px;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 25px;
+            transition: transform 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-card {
+            text-align: center;
+            padding: 30px 20px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .metric-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .metric-label {
+            color: #666;
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+
+        .metric-change {
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .metric-change.positive {
+            color: var(--success-color);
+        }
+
+        .metric-change.negative {
+            color: var(--accent-color);
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 1.1rem;
+        }
+
+        .activity-icon.success {
+            background: rgba(0, 200, 81, 0.1);
+            color: var(--success-color);
+        }
+
+        .activity-icon.warning {
+            background: rgba(255, 187, 51, 0.1);
+            color: var(--warning-color);
+        }
+
+        .activity-icon.danger {
+            background: rgba(255, 68, 68, 0.1);
+            color: var(--accent-color);
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .activity-desc {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .activity-time {
+            font-size: 0.8rem;
+            color: #999;
+        }
+
+        .quick-action-btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin: 5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .quick-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--success-color);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .chart-container {
+            height: 300px;
+            margin: 20px 0;
+        }
+
+        .btn-logout {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-logout:hover {
+            background: #cc0000;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .admin-sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .admin-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <div class="admin-sidebar" id="adminSidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <i class="fas fa-shield-alt"></i> CyberNox
+                </div>
+                <div class="sidebar-subtitle">Admin Dashboard</div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-item">
+                    <a href="#" class="nav-link active" onclick="showSection('dashboard')">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="#" class="nav-link" onclick="showSection('scans')">
+                        <i class="fas fa-search"></i>
+                        <span>Active Scans</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="#" class="nav-link" onclick="showSection('vulnerabilities')">
+                        <i class="fas fa-bug"></i>
+                        <span>Vulnerabilities</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="#" class="nav-link" onclick="showSection('targets')">
+                        <i class="fas fa-bullseye"></i>
+                        <span>Targets</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="#" class="nav-link" onclick="showSection('reports')">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Reports</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="#" class="nav-link" onclick="showSection('users')">
+                        <i class="fas fa-users"></i>
+                        <span>User Management</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="#" class="nav-link" onclick="showSection('settings')">
+                        <i class="fas fa-cog"></i>
+                        <span>System Settings</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="#" class="nav-link" onclick="showSection('logs')">
+                        <i class="fas fa-list-alt"></i>
+                        <span>Activity Logs</span>
+                    </a>
+                </div>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div><strong>System Status</strong></div>
+                <div class="mt-2">
+                    <small><i class="fas fa-circle text-success"></i> All Services Online</small>
+                </div>
+                <div class="mt-2">
+                    <small>v1.0.0 Professional</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="admin-content" id="adminContent">
+            <!-- Header -->
+            <div class="admin-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <nav class="breadcrumb-custom">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#" class="text-decoration-none">Admin</a></li>
+                            <li class="breadcrumb-item active" id="currentSection">Dashboard</li>
+                        </ol>
+                    </nav>
+                </div>
+                
+                <div class="header-right">
+                    <div class="admin-stats">
+                        <span class="stat-badge" id="activeTasks">0 Active</span>
+                        <span class="stat-badge bg-success" id="systemStatus">Online</span>
+                    </div>
+                    
+                    <div class="admin-user">
+                        <img src="https://via.placeholder.com/35/1a237e/ffffff?text=A" alt="Admin">
+                        <div>
+                            <div class="fw-bold">Administrator</div>
+                            <small class="text-muted">Super Admin</small>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-logout" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard Content -->
+            <div class="admin-main">
+                <!-- Dashboard Section -->
+                <div id="dashboard-section" class="content-section">
+                    <div class="system-status">
+                        <div class="status-indicator"></div>
+                        <strong>System Status:</strong>
+                        <span>All services operational</span>
+                        <span class="ms-auto">
+                            <small class="text-muted">Last updated: <span id="lastUpdate">--</span></small>
+                        </span>
+                    </div>
+
+                    <!-- Metrics Row -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="dashboard-card metric-card">
+                                <div class="metric-number" id="totalScans">0</div>
+                                <div class="metric-label">Total Scans</div>
+                                <div class="metric-change positive">
+                                    <i class="fas fa-arrow-up"></i> +12% this week
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="dashboard-card metric-card">
+                                <div class="metric-number text-danger" id="totalVulns">0</div>
+                                <div class="metric-label">Vulnerabilities</div>
+                                <div class="metric-change negative">
+                                    <i class="fas fa-arrow-down"></i> -5% resolved
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="dashboard-card metric-card">
+                                <div class="metric-number text-success" id="totalTargets">0</div>
+                                <div class="metric-label">Active Targets</div>
+                                <div class="metric-change positive">
+                                    <i class="fas fa-arrow-up"></i> +3 new targets
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="dashboard-card metric-card">
+                                <div class="metric-number text-warning" id="activeScans">0</div>
+                                <div class="metric-label">Running Scans</div>
+                                <div class="metric-change">
+                                    <i class="fas fa-clock"></i> In progress
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="dashboard-card">
+                        <h5><i class="fas fa-bolt"></i> Quick Actions</h5>
+                        <div class="mt-3">
+                            <button class="quick-action-btn" onclick="startQuickScan()">
+                                <i class="fas fa-play"></i> Start Quick Scan
+                            </button>
+                            <button class="quick-action-btn" onclick="generateReport()">
+                                <i class="fas fa-file-pdf"></i> Generate Report
+                            </button>
+                            <button class="quick-action-btn" onclick="viewLogs()">
+                                <i class="fas fa-eye"></i> View Logs
+                            </button>
+                            <button class="quick-action-btn" onclick="exportData()">
+                                <i class="fas fa-download"></i> Export Data
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="dashboard-card">
+                                <h5><i class="fas fa-history"></i> Recent Activity</h5>
+                                <div id="recentActivity">
+                                    <!-- Activity items will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="dashboard-card">
+                                <h5><i class="fas fa-chart-pie"></i> Vulnerability Distribution</h5>
+                                <div class="chart-container">
+                                    <canvas id="vulnChart" width="200" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other sections will be hidden initially -->
+                <div id="scans-section" class="content-section d-none">
+                    <div class="dashboard-card">
+                        <h3><i class="fas fa-search"></i> Active Scans Management</h3>
+                        <p>Manage and monitor all active scanning operations.</p>
+                        <!-- Scans content would go here -->
+                    </div>
+                </div>
+
+                <div id="vulnerabilities-section" class="content-section d-none">
+                    <div class="dashboard-card">
+                        <h3><i class="fas fa-bug"></i> Vulnerability Management</h3>
+                        <p>Track and manage discovered vulnerabilities.</p>
+                        <!-- Vulnerabilities content would go here -->
+                    </div>
+                </div>
+
+                <div id="targets-section" class="content-section d-none">
+                    <div class="dashboard-card">
+                        <h3><i class="fas fa-bullseye"></i> Target Management</h3>
+                        <p>Manage scanning targets and their configurations.</p>
+                        <!-- Targets content would go here -->
+                    </div>
+                </div>
+
+                <div id="reports-section" class="content-section d-none">
+                    <div class="dashboard-card">
+                        <h3><i class="fas fa-file-alt"></i> Report Management</h3>
+                        <p>Generate and manage security reports.</p>
+                        <!-- Reports content would go here -->
+                    </div>
+                </div>
+
+                <div id="users-section" class="content-section d-none">
+                    <div class="dashboard-card">
+                        <h3><i class="fas fa-users"></i> User Management</h3>
+                        <p>Manage system users and their permissions.</p>
+                        <!-- Users content would go here -->
+                    </div>
+                </div>
+
+                <div id="settings-section" class="content-section d-none">
+                    <div class="dashboard-card">
+                        <h3><i class="fas fa-cog"></i> System Settings</h3>
+                        <p>Configure system settings and preferences.</p>
+                        <!-- Settings content would go here -->
+                    </div>
+                </div>
+
+                <div id="logs-section" class="content-section d-none">
+                    <div class="dashboard-card">
+                        <h3><i class="fas fa-list-alt"></i> Activity Logs</h3>
+                        <p>View system activity and audit logs.</p>
+                        <div id="activityLogs">
+                            <!-- Activity logs would go here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:5000/api/v1';
+        let vulnChart;
+
+        // Check authentication on load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            initializeDashboard();
+            loadDashboardData();
+            setInterval(updateStats, 30000); // Update every 30 seconds
+        });
+
+        function checkAuth() {
+            const token = localStorage.getItem('cybernox_token');
+            if (!token) {
+                window.location.href = '/api/v1/auth/login';
+                return;
+            }
+            
+            // Verify token with API
+            fetch(`${API_BASE}/status`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).then(response => {
+                if (!response.ok) {
+                    localStorage.removeItem('cybernox_token');
+                    window.location.href = '/api/v1/auth/login';
+                }
+            }).catch(error => {
+                console.error('Auth check failed:', error);
+            });
+        }
+
+        function initializeDashboard() {
+            updateLastUpdate();
+            initializeCharts();
+            loadRecentActivity();
+        }
+
+        function initializeCharts() {
+            const ctx = document.getElementById('vulnChart').getContext('2d');
+            vulnChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Critical', 'High', 'Medium', 'Low'],
+                    datasets: [{
+                        data: [5, 12, 23, 8],
+                        backgroundColor: ['#ff4444', '#ff8800', '#ffbb33', '#00c851']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function loadDashboardData() {
+            try {
+                const token = localStorage.getItem('cybernox_token');
+                const response = await fetch(`${API_BASE}/dashboard/data`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    updateDashboardMetrics(data.data);
+                }
+            } catch (error) {
+                console.error('Failed to load dashboard data:', error);
+            }
+        }
+
+        function updateDashboardMetrics(data) {
+            document.getElementById('totalScans').textContent = data.totals?.scans || 0;
+            document.getElementById('totalVulns').textContent = data.totals?.vulnerabilities || 0;
+            document.getElementById('totalTargets').textContent = data.totals?.targets || 0;
+            
+            // Update chart with real data
+            if (data.vulnerability_distribution && vulnChart) {
+                const labels = data.vulnerability_distribution.map(item => item.severity);
+                const counts = data.vulnerability_distribution.map(item => item.count);
+                
+                vulnChart.data.labels = labels;
+                vulnChart.data.datasets[0].data = counts;
+                vulnChart.update();
+            }
+        }
+
+        function loadRecentActivity() {
+            const activities = JSON.parse(localStorage.getItem('cybernox_activities') || '[]');
+            const activityDiv = document.getElementById('recentActivity');
+            
+            if (activities.length === 0) {
+                activityDiv.innerHTML = '<p class="text-muted">No recent activity</p>';
+                return;
+            }
+            
+            const recentActivities = activities.slice(-10).reverse();
+            let html = '';
+            
+            recentActivities.forEach(activity => {
+                const iconClass = activity.action.includes('failed') ? 'danger' : 'success';
+                const icon = activity.action.includes('login') ? 'fa-sign-in-alt' : 'fa-search';
+                
+                html += `
+                    <div class="activity-item">
+                        <div class="activity-icon ${iconClass}">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">${formatActivityTitle(activity.action)}</div>
+                            <div class="activity-desc">${formatActivityDesc(activity)}</div>
+                        </div>
+                        <div class="activity-time">${formatTime(activity.timestamp)}</div>
+                    </div>
+                `;
+            });
+            
+            activityDiv.innerHTML = html;
+        }
+
+        function formatActivityTitle(action) {
+            const titles = {
+                'admin_login': 'Admin Login',
+                'failed_login': 'Failed Login Attempt',
+                'scan_started': 'Scan Started',
+                'scan_completed': 'Scan Completed'
+            };
+            return titles[action] || action.replace('_', ' ').toUpperCase();
+        }
+
+        function formatActivityDesc(activity) {
+            if (activity.action.includes('login')) {
+                return `User: ${activity.data.username}`;
+            }
+            return activity.data ? JSON.stringify(activity.data).substring(0, 50) + '...' : 'No details';
+        }
+
+        function formatTime(timestamp) {
+            return new Date(timestamp).toLocaleTimeString();
+        }
+
+        function updateLastUpdate() {
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+        }
+
+        function updateStats() {
+            updateLastUpdate();
+            loadDashboardData();
+        }
+
+        // Navigation functions
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.add('d-none');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName + '-section').classList.remove('d-none');
+            
+            // Update breadcrumb
+            document.getElementById('currentSection').textContent = 
+                sectionName.charAt(0).toUpperCase() + sectionName.slice(1);
+            
+            // Update active nav
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('adminSidebar');
+            const content = document.getElementById('adminContent');
+            
+            sidebar.classList.toggle('collapsed');
+            content.classList.toggle('expanded');
+        }
+
+        // Quick action functions
+        function startQuickScan() {
+            alert('Quick scan functionality would be implemented here');
+        }
+
+        function generateReport() {
+            alert('Report generation functionality would be implemented here');
+        }
+
+        function viewLogs() {
+            showSection('logs');
+        }
+
+        function exportData() {
+            alert('Data export functionality would be implemented here');
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('cybernox_token');
+                localStorage.removeItem('cybernox_remember');
+                window.location.href = '/api/v1/auth/login';
+            }
+        }
+
+        // Mobile sidebar toggle
+        if (window.innerWidth <= 768) {
+            document.querySelector('.sidebar-toggle').addEventListener('click', function() {
+                document.getElementById('adminSidebar').classList.toggle('show');
+            });
+        }
+    </script>
+</body>
+</html>
