@@ -3,7 +3,7 @@ RESTful API interface for CyberNox
 Professional web service for remote scanning and management
 """
 
-from flask import Flask, request, jsonify, render_template_string, redirect, url_for
+from flask import Flask, request, jsonify, render_template, redirect, url_for, send_from_directory
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -24,7 +24,9 @@ from utils.database import db
 from utils.logger import logger
 from utils.advanced_config import config_manager
 
-app = Flask(__name__)
+app = Flask(__name__, 
+           template_folder='web/templates', 
+           static_folder='web/static')
 app.config['SECRET_KEY'] = 'cybernox-professional-api-key-change-in-production'
 
 # Enable CORS for web interface
@@ -111,10 +113,8 @@ def login():
     """Login endpoint - serves form on GET, processes login on POST"""
     
     if request.method == 'GET':
-        # Serve the login form
-        with open('admin_login.html', 'r', encoding='utf-8') as f:
-            login_html = f.read()
-        return login_html
+        # Serve the login template
+        return render_template('login.html')
     
     # POST request - process login
     data = request.get_json()
@@ -430,12 +430,7 @@ def generate_report():
 @auth_required
 def dashboard_page():
     """Serve the admin dashboard page"""
-    try:
-        with open('admin_dashboard.html', 'r', encoding='utf-8') as f:
-            dashboard_html = f.read()
-        return dashboard_html
-    except FileNotFoundError:
-        return jsonify({'error': 'Dashboard page not found'}), 404
+    return render_template('dashboard.html')
 
 @app.route('/api/v1/dashboard/data', methods=['GET'])
 @auth_required
