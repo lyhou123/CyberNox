@@ -68,6 +68,22 @@ pip install -r requirements.txt
 pip install requests beautifulsoup4 python-whois colorama pyyaml urllib3 dnspython scapy
 ```
 
+### Windows-Specific Setup
+For full functionality on Windows (especially packet capture features):
+
+1. **Install Npcap** (required for packet capture):
+   - Download from: https://nmap.org/npcap/
+   - Install with "WinPcap API compatibility mode" enabled
+   - Restart your computer after installation
+
+2. **Install Visual Studio Build Tools** (if you encounter compilation errors):
+   - Download from: https://visualstudio.microsoft.com/visual-cpp-build-tools/
+   - Or install Python packages using pre-compiled wheels
+
+3. **Run as Administrator** (for some network operations):
+   - Right-click Command Prompt/PowerShell and "Run as Administrator"
+   - This is required for some advanced network monitoring features
+
 ## 🎯 Usage
 
 ### Basic Commands
@@ -252,6 +268,36 @@ brute:
 ### Optional
 - `dnspython` - Advanced DNS operations
 - `scapy` - Network packet manipulation
+
+## 🛠️ Troubleshooting
+
+### Common Issues
+
+#### "No libpcap provider available" Warning
+This warning appears on Windows when packet capture libraries aren't installed:
+- **Solution**: Install Npcap from https://nmap.org/npcap/
+- **Alternative**: Use basic monitoring features that don't require packet capture
+
+#### Import Errors for Optional Dependencies
+Some modules have optional dependencies that enable advanced features:
+- `python-whois`: Required for WHOIS lookups
+- `dnspython`: Required for advanced DNS operations
+- `scapy`: Required for packet capture and network monitoring
+
+**Solution**: Install missing dependencies:
+```bash
+pip install python-whois dnspython scapy
+```
+
+#### Permission Errors on Network Operations
+Some network operations require elevated privileges:
+- **Windows**: Run Command Prompt/PowerShell as Administrator
+- **Linux/macOS**: Use `sudo` when necessary
+
+#### SSL Certificate Errors
+When scanning HTTPS sites, you might encounter SSL verification errors:
+- This is expected behavior for security testing
+- The tool automatically disables SSL verification for testing purposes
 
 ## 🛡️ Security Considerations
 

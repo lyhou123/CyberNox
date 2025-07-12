@@ -13,9 +13,29 @@ from utils.config import config
 try:
     from scapy.all import sniff, IP, TCP, UDP, ICMP
     SCAPY_AVAILABLE = True
+    
+    # Test if packet capture is actually available
+    try:
+        # Try to create a simple packet capture test
+        import scapy.arch.windows as scapy_windows
+        if hasattr(scapy_windows, 'get_windows_if_list'):
+            interfaces = scapy_windows.get_windows_if_list()
+            if not interfaces:
+                logger.warning("No network interfaces available for packet capture")
+                PACKET_CAPTURE_AVAILABLE = False
+            else:
+                PACKET_CAPTURE_AVAILABLE = True
+        else:
+            PACKET_CAPTURE_AVAILABLE = True
+    except Exception as e:
+        logger.warning(f"Packet capture not available: {e}")
+        PACKET_CAPTURE_AVAILABLE = False
+        
 except ImportError:
     SCAPY_AVAILABLE = False
+    PACKET_CAPTURE_AVAILABLE = False
     logger.warning("Scapy not available, advanced packet capture disabled")
+    logger.info("To enable packet capture on Windows, install Npcap: https://nmap.org/npcap/")
 
 class NetworkMonitor:
     """Network monitoring and traffic analysis"""
@@ -33,6 +53,10 @@ class NetworkMonitor:
         if not SCAPY_AVAILABLE:
             logger.error("Scapy not available, cannot start packet capture")
             return {"error": "Scapy library required for packet capture"}
+        
+        if not PACKET_CAPTURE_AVAILABLE:
+            logger.error("Packet capture not available. On Windows, install Npcap from https://nmap.org/npcap/")
+            return {"error": "Packet capture provider not available. Install Npcap for Windows."}
         
         logger.info(f"Starting network monitoring for {duration} seconds")
         self.monitoring = True
@@ -191,6 +215,9 @@ class NetworkMonitor:
         
         if not SCAPY_AVAILABLE:
             return {"error": "Scapy library required"}
+        
+        if not PACKET_CAPTURE_AVAILABLE:
+            return {"error": "Packet capture provider not available. Install Npcap for Windows."}
         
         scan_attempts = defaultdict(set)
         

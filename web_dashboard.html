@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberNox - Professional Security Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js" rel="preload">
+    <style>
+        :root {
+            --primary-color: #1a237e;
+            --secondary-color: #303f9f;
+            --accent-color: #ff4444;
+            --success-color: #00c851;
+            --warning-color: #ffbb33;
+            --dark-bg: #121212;
+            --card-bg: #1e1e1e;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .dashboard-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin: 20px;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            min-height: 100vh;
+            padding: 20px 0;
+            color: white;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 15px 25px;
+            border-radius: 10px;
+            margin: 5px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .main-content {
+            background: #f8f9fa;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .stats-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .scan-item {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid #28a745;
+        }
+
+        .scan-item.running {
+            border-left-color: var(--warning-color);
+        }
+
+        .scan-item.failed {
+            border-left-color: var(--accent-color);
+        }
+
+        .vulnerability-badge {
+            font-size: 0.8rem;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .vuln-critical {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .vuln-high {
+            background: #ff8800;
+            color: white;
+        }
+
+        .vuln-medium {
+            background: var(--warning-color);
+            color: #333;
+        }
+
+        .vuln-low {
+            background: #28a745;
+            color: white;
+        }
+
+        .scan-form {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-cybernox {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cybernox:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+
+        .progress-custom {
+            height: 20px;
+            border-radius: 10px;
+            background: #e9ecef;
+        }
+
+        .progress-bar-custom {
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 10px;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .terminal-window {
+            background: #1e1e1e;
+            color: #00ff00;
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .terminal-header {
+            background: #333;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px 10px 0 0;
+            font-weight: bold;
+            position: relative;
+        }
+
+        .terminal-buttons {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .terminal-button {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 5px;
+        }
+
+        .btn-close { background: #ff5f56; }
+        .btn-minimize { background: #ffbd2e; }
+        .btn-maximize { background: #27ca3f; }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                min-height: auto;
+            }
+            
+            .stats-number {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 p-0">
+                <div class="sidebar">
+                    <div class="text-center mb-4">
+                        <h3 class="text-white"><i class="fas fa-shield-alt"></i> CyberNox</h3>
+                        <small class="text-light">Professional Security Suite</small>
+                    </div>
+                    
+                    <nav class="nav nav-pills flex-column">
+                        <a class="nav-link active" href="#" onclick="showSection('dashboard')">
+                            <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                        </a>
+                        <a class="nav-link" href="#" onclick="showSection('reconnaissance')">
+                            <i class="fas fa-search me-2"></i> Reconnaissance
+                        </a>
+                        <a class="nav-link" href="#" onclick="showSection('scanning')">
+                            <i class="fas fa-radar me-2"></i> Port Scanning
+                        </a>
+                        <a class="nav-link" href="#" onclick="showSection('vulnerabilities')">
+                            <i class="fas fa-bug me-2"></i> Vulnerabilities
+                        </a>
+                        <a class="nav-link" href="#" onclick="showSection('exploitation')">
+                            <i class="fas fa-bomb me-2"></i> Exploitation
+                        </a>
+                        <a class="nav-link" href="#" onclick="showSection('monitoring')">
+                            <i class="fas fa-eye me-2"></i> Monitoring
+                        </a>
+                        <a class="nav-link" href="#" onclick="showSection('reports')">
+                            <i class="fas fa-file-alt me-2"></i> Reports
+                        </a>
+                        <a class="nav-link" href="#" onclick="showSection('settings')">
+                            <i class="fas fa-cog me-2"></i> Settings
+                        </a>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10">
+                <div class="main-content">
+                    <!-- Dashboard Section -->
+                    <div id="dashboard-section" class="content-section">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h2><i class="fas fa-tachometer-alt text-primary"></i> Security Dashboard</h2>
+                            <button class="btn btn-cybernox" onclick="refreshDashboard()">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+
+                        <!-- Statistics Cards -->
+                        <div class="row mb-4">
+                            <div class="col-md-3 mb-3">
+                                <div class="stats-card">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <div class="stats-number" id="total-scans">0</div>
+                                            <div class="text-muted">Total Scans</div>
+                                        </div>
+                                        <div class="text-primary fs-1">
+                                            <i class="fas fa-search"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="stats-card">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <div class="stats-number text-danger" id="vulnerabilities-found">0</div>
+                                            <div class="text-muted">Vulnerabilities</div>
+                                        </div>
+                                        <div class="text-danger fs-1">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="stats-card">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <div class="stats-number text-success" id="targets-scanned">0</div>
+                                            <div class="text-muted">Targets</div>
+                                        </div>
+                                        <div class="text-success fs-1">
+                                            <i class="fas fa-bullseye"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="stats-card">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <div class="stats-number text-warning" id="running-tasks">0</div>
+                                            <div class="text-muted">Running Tasks</div>
+                                        </div>
+                                        <div class="text-warning fs-1">
+                                            <i class="fas fa-clock"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Charts Row -->
+                        <div class="row mb-4">
+                            <div class="col-md-8">
+                                <div class="chart-container">
+                                    <h5><i class="fas fa-chart-line"></i> Scan Activity (Last 7 Days)</h5>
+                                    <canvas id="activityChart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="chart-container">
+                                    <h5><i class="fas fa-chart-pie"></i> Vulnerability Distribution</h5>
+                                    <canvas id="vulnChart" width="200" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Scans -->
+                        <div class="chart-container">
+                            <h5><i class="fas fa-history"></i> Recent Scan Results</h5>
+                            <div id="recent-scans">
+                                <!-- Recent scans will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reconnaissance Section -->
+                    <div id="reconnaissance-section" class="content-section d-none">
+                        <h2><i class="fas fa-search text-primary"></i> Reconnaissance Tools</h2>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <div class="scan-form">
+                                    <h5><i class="fas fa-globe"></i> WHOIS Lookup</h5>
+                                    <form onsubmit="performWhoisLookup(event)">
+                                        <div class="mb-3">
+                                            <label for="whois-domain" class="form-label">Domain:</label>
+                                            <input type="text" class="form-control" id="whois-domain" placeholder="example.com" required>
+                                        </div>
+                                        <button type="submit" class="btn btn-cybernox">
+                                            <i class="fas fa-search"></i> Lookup
+                                        </button>
+                                    </form>
+                                    <div id="whois-results" class="mt-3"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <div class="scan-form">
+                                    <h5><i class="fas fa-sitemap"></i> Subdomain Enumeration</h5>
+                                    <form onsubmit="performSubdomainEnum(event)">
+                                        <div class="mb-3">
+                                            <label for="subdomain-domain" class="form-label">Domain:</label>
+                                            <input type="text" class="form-control" id="subdomain-domain" placeholder="example.com" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="subdomain-wordlist" class="form-label">Wordlist:</label>
+                                            <select class="form-control" id="subdomain-wordlist">
+                                                <option value="subdomains-top1million-5000.txt">Top 5000 Subdomains</option>
+                                                <option value="subdomains-top1million-20000.txt">Top 20000 Subdomains</option>
+                                                <option value="dns-Jhaddix.txt">Jhaddix DNS List</option>
+                                            </select>
+                                        </div>
+                                        <button type="submit" class="btn btn-cybernox">
+                                            <i class="fas fa-search"></i> Enumerate
+                                        </button>
+                                    </form>
+                                    <div id="subdomain-results" class="mt-3"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Port Scanning Section -->
+                    <div id="scanning-section" class="content-section d-none">
+                        <h2><i class="fas fa-radar text-primary"></i> Port Scanning</h2>
+                        
+                        <div class="scan-form">
+                            <h5><i class="fas fa-network-wired"></i> TCP Port Scanner</h5>
+                            <form onsubmit="performPortScan(event)">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="port-target" class="form-label">Target:</label>
+                                        <input type="text" class="form-control" id="port-target" placeholder="192.168.1.1 or example.com" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="port-range" class="form-label">Port Range:</label>
+                                        <input type="text" class="form-control" id="port-range" placeholder="1-1000 or 80,443,22" required>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="port-threads" class="form-label">Threads:</label>
+                                        <input type="number" class="form-control" id="port-threads" value="50" min="1" max="200">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="port-timeout" class="form-label">Timeout (seconds):</label>
+                                        <input type="number" class="form-control" id="port-timeout" value="3" min="1" max="30">
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-cybernox">
+                                    <i class="fas fa-play"></i> Start Scan
+                                </button>
+                            </form>
+                            <div id="port-scan-results" class="mt-3"></div>
+                        </div>
+                    </div>
+
+                    <!-- Terminal Output -->
+                    <div class="chart-container mt-4" id="terminal-output" style="display: none;">
+                        <div class="terminal-header">
+                            <i class="fas fa-terminal"></i> Terminal Output
+                            <div class="terminal-buttons">
+                                <span class="terminal-button btn-close"></span>
+                                <span class="terminal-button btn-minimize"></span>
+                                <span class="terminal-button btn-maximize"></span>
+                            </div>
+                        </div>
+                        <div class="terminal-window" id="terminal-content">
+                            CyberNox Professional v1.0.0 - Ready for operations...<br>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // Global variables
+        let activityChart, vulnChart;
+        let apiToken = localStorage.getItem('cybernox_token');
+        const API_BASE = 'http://127.0.0.1:5000/api/v1';
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            loadDashboardData();
+            
+            // Check for API token
+            if (!apiToken) {
+                showLogin();
+            }
+        });
+
+        // Authentication
+        function showLogin() {
+            const loginModal = `
+                <div class="modal fade" id="loginModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">CyberNox Authentication</h5>
+                            </div>
+                            <div class="modal-body">
+                                <form onsubmit="login(event)">
+                                    <div class="mb-3">
+                                        <label for="username" class="form-label">Username:</label>
+                                        <input type="text" class="form-control" id="username" value="admin" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="password" class="form-label">Password:</label>
+                                        <input type="password" class="form-control" id="password" value="cybernox123" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-cybernox w-100">Login</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', loginModal);
+            new bootstrap.Modal(document.getElementById('loginModal')).show();
+        }
+
+        async function login(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.token) {
+                    localStorage.setItem('cybernox_token', data.token);
+                    apiToken = data.token;
+                    bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
+                    loadDashboardData();
+                } else {
+                    alert('Login failed: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('Connection error. Make sure the API server is running.');
+            }
+        }
+
+        // Navigation
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.add('d-none');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName + '-section').classList.remove('d-none');
+            
+            // Update active nav link
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            event.target.classList.add('active');
+        }
+
+        // Chart initialization
+        function initializeCharts() {
+            const ctx1 = document.getElementById('activityChart').getContext('2d');
+            activityChart = new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Scans Performed',
+                        data: [12, 19, 3, 5, 2, 3, 8],
+                        borderColor: '#1a237e',
+                        backgroundColor: 'rgba(26, 35, 126, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            const ctx2 = document.getElementById('vulnChart').getContext('2d');
+            vulnChart = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Critical', 'High', 'Medium', 'Low'],
+                    datasets: [{
+                        data: [5, 12, 23, 8],
+                        backgroundColor: ['#ff4444', '#ff8800', '#ffbb33', '#00c851']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // API functions
+        async function apiRequest(endpoint, method = 'GET', data = null) {
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiToken}`
+                }
+            };
+            
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                return await response.json();
+            } catch (error) {
+                console.error('API request failed:', error);
+                logToTerminal(`API Error: ${error.message}`);
+                return { error: error.message };
+            }
+        }
+
+        // Dashboard functions
+        async function loadDashboardData() {
+            if (!apiToken) return;
+            
+            try {
+                const data = await apiRequest('/dashboard');
+                if (data.success) {
+                    updateDashboardStats(data.data);
+                }
+            } catch (error) {
+                console.error('Failed to load dashboard data:', error);
+            }
+        }
+
+        function updateDashboardStats(data) {
+            document.getElementById('total-scans').textContent = data.total_scans || 0;
+            document.getElementById('vulnerabilities-found').textContent = data.total_vulnerabilities || 0;
+            document.getElementById('targets-scanned').textContent = data.unique_targets || 0;
+            document.getElementById('running-tasks').textContent = data.active_tasks || 0;
+        }
+
+        function refreshDashboard() {
+            logToTerminal('Refreshing dashboard data...');
+            loadDashboardData();
+        }
+
+        // Scan functions
+        async function performWhoisLookup(event) {
+            event.preventDefault();
+            
+            const domain = document.getElementById('whois-domain').value;
+            const resultsDiv = document.getElementById('whois-results');
+            
+            logToTerminal(`Starting WHOIS lookup for ${domain}...`);
+            resultsDiv.innerHTML = '<div class="loading-spinner"></div> Performing WHOIS lookup...';
+            
+            const result = await apiRequest('/recon/whois', 'POST', { domain });
+            
+            if (result.success) {
+                logToTerminal(`WHOIS lookup completed for ${domain}`);
+                resultsDiv.innerHTML = `
+                    <div class="alert alert-success">
+                        <h6>WHOIS Information for ${domain}</h6>
+                        <pre>${JSON.stringify(result.results, null, 2)}</pre>
+                    </div>
+                `;
+            } else {
+                logToTerminal(`WHOIS lookup failed: ${result.error}`);
+                resultsDiv.innerHTML = `<div class="alert alert-danger">Error: ${result.error}</div>`;
+            }
+        }
+
+        async function performSubdomainEnum(event) {
+            event.preventDefault();
+            
+            const domain = document.getElementById('subdomain-domain').value;
+            const wordlist = document.getElementById('subdomain-wordlist').value;
+            const resultsDiv = document.getElementById('subdomain-results');
+            
+            logToTerminal(`Starting subdomain enumeration for ${domain}...`);
+            resultsDiv.innerHTML = '<div class="loading-spinner"></div> Starting subdomain enumeration...';
+            
+            const result = await apiRequest('/recon/subdomains', 'POST', { 
+                domain, 
+                wordlist 
+            });
+            
+            if (result.success) {
+                logToTerminal(`Subdomain enumeration task started: ${result.task_id}`);
+                resultsDiv.innerHTML = `
+                    <div class="alert alert-info">
+                        <h6>Subdomain Enumeration Started</h6>
+                        <p>Task ID: ${result.task_id}</p>
+                        <p>Status: ${result.status}</p>
+                        <button class="btn btn-sm btn-outline-primary" onclick="checkTaskStatus('${result.task_id}')">
+                            Check Status
+                        </button>
+                    </div>
+                `;
+            } else {
+                logToTerminal(`Subdomain enumeration failed: ${result.error}`);
+                resultsDiv.innerHTML = `<div class="alert alert-danger">Error: ${result.error}</div>`;
+            }
+        }
+
+        async function performPortScan(event) {
+            event.preventDefault();
+            
+            const target = document.getElementById('port-target').value;
+            const portRange = document.getElementById('port-range').value;
+            const threads = document.getElementById('port-threads').value;
+            const resultsDiv = document.getElementById('port-scan-results');
+            
+            // Parse port range
+            let ports = [];
+            if (portRange.includes('-')) {
+                const [start, end] = portRange.split('-').map(Number);
+                for (let i = start; i <= end; i++) {
+                    ports.push(i);
+                }
+            } else if (portRange.includes(',')) {
+                ports = portRange.split(',').map(Number);
+            } else {
+                ports = [Number(portRange)];
+            }
+            
+            logToTerminal(`Starting port scan on ${target}...`);
+            resultsDiv.innerHTML = '<div class="loading-spinner"></div> Performing port scan...';
+            
+            const result = await apiRequest('/scan/ports', 'POST', { 
+                target, 
+                ports,
+                max_threads: Number(threads)
+            });
+            
+            if (result.success) {
+                logToTerminal(`Port scan completed for ${target}`);
+                const openPorts = result.results.open_ports || [];
+                
+                let html = `
+                    <div class="alert alert-success">
+                        <h6>Port Scan Results for ${target}</h6>
+                        <p>Open Ports Found: ${openPorts.length}</p>
+                `;
+                
+                if (openPorts.length > 0) {
+                    html += '<ul>';
+                    openPorts.forEach(port => {
+                        html += `<li>Port ${port} - OPEN</li>`;
+                    });
+                    html += '</ul>';
+                }
+                
+                html += '</div>';
+                resultsDiv.innerHTML = html;
+            } else {
+                logToTerminal(`Port scan failed: ${result.error}`);
+                resultsDiv.innerHTML = `<div class="alert alert-danger">Error: ${result.error}</div>`;
+            }
+        }
+
+        async function checkTaskStatus(taskId) {
+            const result = await apiRequest(`/tasks/${taskId}`);
+            
+            if (result.success) {
+                const task = result.task;
+                logToTerminal(`Task ${taskId} status: ${task.status}`);
+                
+                if (task.status === 'completed' && task.results) {
+                    // Display results
+                    console.log('Task results:', task.results);
+                } else if (task.status === 'failed') {
+                    logToTerminal(`Task failed: ${task.error}`);
+                }
+            }
+        }
+
+        // Terminal functions
+        function logToTerminal(message) {
+            const terminal = document.getElementById('terminal-content');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            terminal.innerHTML += `<br>[${timestamp}] ${message}`;
+            terminal.scrollTop = terminal.scrollHeight;
+            
+            // Show terminal if hidden
+            document.getElementById('terminal-output').style.display = 'block';
+        }
+
+        function clearTerminal() {
+            document.getElementById('terminal-content').innerHTML = 'CyberNox Professional v1.0.0 - Ready for operations...<br>';
+        }
+    </script>
+</body>
+</html>

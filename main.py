@@ -235,9 +235,19 @@ def handle_monitor(args):
         monitor = NetworkMonitor()
         
         if args.portscan_detect:
-            return monitor.port_scan_detection(args.interface, args.duration)
+            result = monitor.port_scan_detection(args.interface, args.duration)
         else:
-            return monitor.start_monitoring(args.interface, args.duration)
+            result = monitor.start_monitoring(args.interface, args.duration)
+        
+        # Check if packet capture failed and provide helpful message
+        if isinstance(result, dict) and "error" in result:
+            if "Packet capture provider not available" in result["error"]:
+                logger.warning("Packet capture not available. Falling back to basic monitoring.")
+                logger.info("To enable full monitoring on Windows, install Npcap: https://nmap.org/npcap/")
+                basic_monitor = BasicNetworkMonitor()
+                return basic_monitor.monitor_connections(args.duration)
+        
+        return result
     
     except Exception as e:
         logger.warning(f"Advanced monitoring failed: {e}")
