@@ -64,7 +64,7 @@ def cli(ctx, version, banner):
     if version:
         click.echo(ColoredFormatter.success("CyberNox v2.0.0"))
         click.echo(ColoredFormatter.info("Professional Cybersecurity Toolkit"))
-        click.echo(ColoredFormatter.info("Copyright (c) 2024 CyberNox Team"))
+        click.echo(ColoredFormatter.info("Copyright (c) 2025 Lyhou Phiv"))
         return
     
     # If no command provided, show help
