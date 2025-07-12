@@ -53,8 +53,8 @@ CyberNox is a comprehensive cybersecurity toolkit designed for penetration testi
 ### Quick Setup
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/cybernox.git
-cd cybernox
+git clone https://github.com/lyhou123/CyberNox.git
+cd CyberNox
 
 # Run setup script
 python setup.py
@@ -285,7 +285,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🐛 Bug Reports
 
-If you find any bugs or issues, please report them on the [GitHub Issues](https://github.com/yourusername/cybernox/issues) page.
+If you find any bugs or issues, please report them on the [GitHub Issues](https://github.com/lyhou123/CyberNox/issues) page.
 
 ## 📞 Support
 
