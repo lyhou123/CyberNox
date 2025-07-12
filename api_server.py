@@ -88,20 +88,26 @@ def auth_required(f):
         token = request.headers.get('Authorization')
         
         if not token:
-            return jsonify({'error': 'Token is missing'}), 401
+            logger.warning("API request without token")
+            return jsonify({'error': 'Token is missing', 'redirect': '/api/v1/auth/login'}), 401
         
         try:
             if token.startswith('Bearer '):
                 token = token[7:]
             
-            # For demo purposes, accept any token
-            # In production, implement proper JWT validation
+            # Decode and validate JWT token
             data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            logger.info(f"Valid token for user: {data.get('user', 'unknown')}")
             
         except jwt.ExpiredSignatureError:
-            return jsonify({'error': 'Token has expired'}), 401
+            logger.warning("Expired token used")
+            return jsonify({'error': 'Token has expired', 'redirect': '/api/v1/auth/login'}), 401
         except jwt.InvalidTokenError:
-            return jsonify({'error': 'Token is invalid'}), 401
+            logger.warning("Invalid token used")
+            return jsonify({'error': 'Token is invalid', 'redirect': '/api/v1/auth/login'}), 401
+        except Exception as e:
+            logger.error(f"Token validation error: {e}")
+            return jsonify({'error': 'Token validation failed', 'redirect': '/api/v1/auth/login'}), 401
         
         return f(*args, **kwargs)
     
@@ -495,6 +501,16 @@ def get_config():
     except Exception as e:
         logger.error(f"Config API error: {e}")
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/v1/auth/validate', methods=['GET'])
+@auth_required
+def validate_token():
+    """Validate if the current token is still valid"""
+    return jsonify({
+        'success': True,
+        'message': 'Token is valid',
+        'timestamp': datetime.now().isoformat()
+    })
 
 @app.errorhandler(404)
 def not_found(error):

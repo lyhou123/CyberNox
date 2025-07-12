@@ -9,6 +9,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Check if user is already logged in
     const token = localStorage.getItem('cybernox_token');
     if (token) {
+        console.log('Token found, verifying validity...');
+        
         // Verify token is still valid by accessing dashboard
         fetch('/api/v1/dashboard', {
             headers: {
@@ -17,11 +19,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }).then(response => {
             if (response.ok) {
+                console.log('Token is valid, redirecting to dashboard...');
                 // Token is valid, redirect to dashboard
                 return response.text();
             } else {
+                console.log('Token is invalid, clearing and staying on login page...');
                 // Token invalid, remove it
                 localStorage.removeItem('cybernox_token');
+                localStorage.removeItem('cybernox_remember');
                 throw new Error('Token validation failed');
             }
         }).then(html => {
@@ -31,9 +36,11 @@ document.addEventListener('DOMContentLoaded', function() {
             document.close();
             window.history.pushState({}, 'CyberNox Dashboard', '/api/v1/dashboard');
         }).catch(error => {
-            console.error('Token validation failed:', error);
-            // Stay on login page
+            console.log('Staying on login page:', error.message);
+            // Stay on login page - user needs to login
         });
+    } else {
+        console.log('No token found, user needs to login');
     }
 });
 
