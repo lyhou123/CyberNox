@@ -45,6 +45,66 @@ class VulnerabilityScanner:
             "vulnerabilities": vulnerabilities
         }
     
+    def scan_web_vulnerabilities_simple(self, target_url):
+        """Simplified web vulnerability scan for quick testing"""
+        logger.info(f"Starting simple web vulnerability scan for {target_url}")
+        
+        if not target_url.startswith(('http://', 'https://')):
+            target_url = 'http://' + target_url
+        
+        vulnerabilities = []
+        
+        try:
+            # Basic connectivity test
+            response = requests.get(target_url, timeout=self.timeout, verify=False)
+            logger.info(f"Successfully connected to {target_url}")
+            
+            # Quick SQL injection test (only 2 payloads)
+            sql_payloads = ["'", "' OR '1'='1"]
+            for payload in sql_payloads:
+                try:
+                    test_url = f"{target_url}?id={payload}"
+                    resp = requests.get(test_url, timeout=self.timeout, verify=False)
+                    if any(error in resp.text.lower() for error in ["sql syntax", "mysql_fetch", "ora-"]):
+                        vulnerabilities.append({
+                            "type": "SQL Injection",
+                            "severity": "High",
+                            "url": test_url,
+                            "parameter": "id",
+                            "payload": payload
+                        })
+                except:
+                    continue
+            
+            # Security headers check
+            security_headers = ['X-Content-Type-Options', 'X-Frame-Options', 'Content-Security-Policy']
+            missing_headers = []
+            for header in security_headers:
+                if header not in response.headers:
+                    missing_headers.append(header)
+            
+            if missing_headers:
+                vulnerabilities.append({
+                    "type": "Missing Security Headers",
+                    "severity": "Low",
+                    "evidence": f"Missing headers: {', '.join(missing_headers)}"
+                })
+                
+        except Exception as e:
+            logger.error(f"Basic connectivity test failed: {e}")
+            return {
+                "target": target_url,
+                "error": str(e),
+                "vulnerabilities_found": 0,
+                "vulnerabilities": []
+            }
+        
+        return {
+            "target": target_url,
+            "vulnerabilities_found": len(vulnerabilities),
+            "vulnerabilities": vulnerabilities
+        }
+    
     def _test_sql_injection(self, base_url):
         """Test for SQL injection vulnerabilities"""
         logger.info("Testing for SQL injection vulnerabilities")

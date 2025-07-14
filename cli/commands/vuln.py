@@ -21,9 +21,10 @@ def vuln():
 @click.option('--cookies', is_flag=True, help='Test cookie security')
 @click.option('--headers', is_flag=True, help='Analyze security headers')
 @click.option('--ssl', is_flag=True, help='Perform SSL/TLS security checks')
+@click.option('--simple', is_flag=True, help='Use simplified scanning for faster results')
 @click.option('--user-agent', help='Custom User-Agent string')
 @common_options
-def web(url, crawl, forms, cookies, headers, ssl, user_agent, output, format, timeout, threads):
+def web(url, crawl, forms, cookies, headers, ssl, simple, user_agent, output, format, timeout, threads):
     """Scan web application for vulnerabilities
     
     Examples:
@@ -58,9 +59,17 @@ def web(url, crawl, forms, cookies, headers, ssl, user_agent, output, format, ti
     try:
         scanner = WebVulnScanner()
         
-        with click.progressbar(label='Scanning for vulnerabilities') as bar:
-            if hasattr(scanner, 'scan_web_vulnerabilities'):
+        # Initialize scan steps
+        scan_steps = 6  # SQL, XSS, Directory Traversal, Sensitive Files, Headers, SSL
+        completed_steps = 0
+        
+        with click.progressbar(length=scan_steps, label='Scanning for vulnerabilities') as bar:
+            if simple and hasattr(scanner, 'scan_web_vulnerabilities_simple'):
+                results = scanner.scan_web_vulnerabilities_simple(url)
+                completed_steps = scan_steps
+            elif hasattr(scanner, 'scan_web_vulnerabilities'):
                 results = scanner.scan_web_vulnerabilities(url)
+                completed_steps = scan_steps
             else:
                 # Fallback implementation
                 results = {
@@ -69,7 +78,10 @@ def web(url, crawl, forms, cookies, headers, ssl, user_agent, output, format, ti
                     'scan_features': scan_features,
                     'timestamp': str(click.DateTime())
                 }
-            bar.update(1)
+                completed_steps = 1
+            
+            # Update progress bar to completion
+            bar.update(completed_steps)
         
         if results and results.get('vulnerabilities'):
             vuln_count = len(results['vulnerabilities'])
@@ -232,7 +244,7 @@ def database(target, database, port, auth_check, injection, output, format, time
             'timestamp': str(click.DateTime())
         }
         
-        with click.progressbar(label='Scanning database vulnerabilities') as bar:
+        with click.progressbar(length=1, label='Scanning database vulnerabilities') as bar:
             # Implement database vulnerability scanning logic here
             # This would include:
             # 1. Database service detection
