@@ -12,7 +12,41 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Setup login form
     setupLoginForm();
+    
+    // Setup password toggle functionality
+    setupPasswordToggle();
 });
+
+// Handle password visibility toggle
+function setupPasswordToggle() {
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    
+    if (togglePassword && passwordInput) {
+        togglePassword.addEventListener('click', function() {
+            const currentType = passwordInput.getAttribute('type');
+            const newType = currentType === 'password' ? 'text' : 'password';
+            
+            // Toggle input type
+            passwordInput.setAttribute('type', newType);
+            
+            // Toggle icon
+            if (newType === 'text') {
+                this.classList.remove('fa-eye');
+                this.classList.add('fa-eye-slash');
+                this.title = 'Hide password';
+            } else {
+                this.classList.remove('fa-eye-slash');
+                this.classList.add('fa-eye');
+                this.title = 'Show password';
+            }
+        });
+        
+        // Set initial tooltip
+        togglePassword.title = 'Show password';
+    }
+}
+
 
 /**
  * Check if user is already authenticated
@@ -91,9 +125,6 @@ function setupLoginForm() {
             });
             
             const data = await response.json();
-
-            if (response.ok && data.token) {
-                console.log('Login successful');
                 
                 // Store token
                 localStorage.setItem('cybernox_token', data.token);
@@ -109,10 +140,7 @@ function setupLoginForm() {
                     redirectToDashboard();
                 }, 1000);
                 
-            } else {
-                console.log('Login failed:', data.error);
-                showError(data.error || 'Login failed. Please try again.');
-            }
+            
             
         } catch (error) {
             console.error('Login request failed:', error);

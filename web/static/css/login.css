@@ -210,6 +210,34 @@ body {
     z-index: 2;
 }
 
+/* Password toggle styles */
+.password-group {
+    position: relative;
+}
+
+.password-group .toggle-password {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+    cursor: pointer;
+    z-index: 4;
+    transition: all 0.3s ease;
+    font-size: 1.1rem;
+    padding: 5px;
+    border-radius: 3px;
+}
+
+.password-group .toggle-password:hover {
+    color: var(--primary-color);
+    background-color: rgba(26, 35, 126, 0.1);
+}
+
+.password-group .form-control {
+    padding-right: 55px;
+}
+
 @media (max-width: 768px) {
     .login-container {
         margin: 20px;
