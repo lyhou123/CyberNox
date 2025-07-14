@@ -122,6 +122,21 @@ class CyberNoxDatabase:
                 )
             """)
             
+            # Users table for authentication
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT UNIQUE NOT NULL,
+                    password_hash TEXT NOT NULL,
+                    role TEXT DEFAULT 'user',
+                    email TEXT,
+                    is_active BOOLEAN DEFAULT 1,
+                    created_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    last_login DATETIME,
+                    login_count INTEGER DEFAULT 0
+                )
+            """)
+            
             # Create indexes for better performance
             conn.execute("CREATE INDEX IF NOT EXISTS idx_scan_results_target ON scan_results(target)")
             conn.execute("CREATE INDEX IF NOT EXISTS idx_scan_results_type ON scan_results(scan_type)")
@@ -132,6 +147,9 @@ class CyberNoxDatabase:
             
             conn.commit()
             logger.info("Database initialized successfully")
+            
+        # Initialize default admin user if needed
+        self.initialize_default_admin()
     
     @contextmanager
     def get_connection(self):
@@ -402,6 +420,120 @@ class CyberNoxDatabase:
             
             logger.info(f"Cleanup completed: {deleted_scans} scans, {deleted_vulns} vulnerabilities, "
                        f"{deleted_ports} ports, {deleted_subdomains} subdomains removed")
+
+    # User Management Methods
+    def create_user(self, username: str, password: str, role: str = 'user', email: str = None) -> bool:
+        """Create a new user with hashed password"""
+        import bcrypt
+        
+        # Hash the password
+        password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        
+        try:
+            with self.get_connection() as conn:
+                conn.execute("""
+                    INSERT INTO users (username, password_hash, role, email)
+                    VALUES (?, ?, ?, ?)
+                """, (username, password_hash, role, email))
+                conn.commit()
+                logger.info(f"User created successfully: {username}")
+                return True
+        except sqlite3.IntegrityError:
+            logger.warning(f"User already exists: {username}")
+            return False
+        except Exception as e:
+            logger.error(f"Error creating user {username}: {e}")
+            return False
+    
+    def validate_user_credentials(self, username: str, password: str) -> Dict[str, Any]:
+        """Validate user credentials and return user info"""
+        import bcrypt
+        
+        try:
+            with self.get_connection() as conn:
+                cursor = conn.execute("""
+                    SELECT id, username, password_hash, role, email, is_active
+                    FROM users 
+                    WHERE username = ? AND is_active = 1
+                """, (username,))
+                
+                user = cursor.fetchone()
+                
+                if user and bcrypt.checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
+                    # Update login statistics
+                    conn.execute("""
+                        UPDATE users 
+                        SET last_login = CURRENT_TIMESTAMP, login_count = login_count + 1
+                        WHERE username = ?
+                    """, (username,))
+                    conn.commit()
+                    
+                    logger.info(f"Successful login for user: {username}")
+                    
+                    return {
+                        'id': user['id'],
+                        'username': user['username'],
+                        'role': user['role'],
+                        'email': user['email']
+                    }
+                else:
+                    logger.warning(f"Failed login attempt for user: {username}")
+                    return None
+                    
+        except Exception as e:
+            logger.error(f"Error validating credentials for {username}: {e}")
+            return None
+    
+    def get_user_by_username(self, username: str) -> Dict[str, Any]:
+        """Get user information by username"""
+        try:
+            with self.get_connection() as conn:
+                cursor = conn.execute("""
+                    SELECT id, username, role, email, is_active, created_date, last_login, login_count
+                    FROM users 
+                    WHERE username = ?
+                """, (username,))
+                
+                user = cursor.fetchone()
+                
+                if user:
+                    return dict(user)
+                return None
+                
+        except Exception as e:
+            logger.error(f"Error getting user {username}: {e}")
+            return None
+    
+    def list_users(self) -> List[Dict[str, Any]]:
+        """List all users"""
+        try:
+            with self.get_connection() as conn:
+                cursor = conn.execute("""
+                    SELECT id, username, role, email, is_active, created_date, last_login, login_count
+                    FROM users 
+                    ORDER BY created_date DESC
+                """)
+                
+                return [dict(row) for row in cursor.fetchall()]
+                
+        except Exception as e:
+            logger.error(f"Error listing users: {e}")
+            return []
+    
+    def initialize_default_admin(self):
+        """Initialize default admin user if no users exist"""
+        try:
+            with self.get_connection() as conn:
+                cursor = conn.execute("SELECT COUNT(*) FROM users")
+                user_count = cursor.fetchone()[0]
+                
+                if user_count == 0:
+                    # Create default admin user
+                    self.create_user('admin', 'admin123', 'admin', 'admin@cybernox.local')
+                    logger.info("Default admin user created: admin/admin123")
+                    
+        except Exception as e:
+            logger.error(f"Error initializing default admin: {e}")
 
 # Global database instance
 db = CyberNoxDatabase()

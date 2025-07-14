@@ -65,6 +65,8 @@ function setupLoginForm() {
         const username = document.getElementById('username').value.trim();
         const password = document.getElementById('password').value;
         const rememberMe = document.getElementById('rememberMe').checked;
+
+        console.log('Login attempt:', { username, rememberMe, password });
         
         if (!username || !password) {
             showError('Please enter both username and password');
@@ -89,7 +91,7 @@ function setupLoginForm() {
             });
             
             const data = await response.json();
-            
+
             if (response.ok && data.token) {
                 console.log('Login successful');
                 
