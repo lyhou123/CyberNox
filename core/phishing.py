@@ -91,7 +91,7 @@ class PhishingDetector:
         for brand in brands:
             if brand in domain.lower() and not domain.lower().endswith(f'{brand}.com'):
                 indicators.append(f"Potential {brand} impersonation")
-        
+       
         # Check for URL shorteners
         shorteners = ['bit.ly', 'tinyurl.com', 'goo.gl', 't.co', 'short.link', 'ow.ly']
         if domain.lower() in shorteners:
