@@ -3,7 +3,7 @@
 CyberNox - Advanced Cybersecurity Toolkit
 Main application entry point with modular CLI architecture
 Version: 2.0.0
-Author: CyberNox Team
+Author: Lyhou Phiv
 
 A comprehensive cybersecurity toolkit for penetration testing, vulnerability assessment,
 network monitoring, and security research with professional modular CLI.
