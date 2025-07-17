@@ -9,37 +9,44 @@ CyberNox is a comprehensive cybersecurity toolkit designed for penetration testi
 ## 🚀 Features
 
 ### 🔍 Reconnaissance
+
 - **WHOIS Lookup**: Domain registration information
 - **Subdomain Enumeration**: Discover subdomains using wordlists
 - **DNS Lookup**: Comprehensive DNS record analysis
 
 ### 🔎 Scanning
+
 - **Port Scanning**: Multi-threaded TCP port scanner
 - **Service Detection**: Banner grabbing and service fingerprinting
 - **SSL/TLS Analysis**: Certificate information and security assessment
 
 ### 🛡️ Vulnerability Assessment
+
 - **CVE Database Search**: Look up known vulnerabilities
 - **Web Application Testing**: SQL injection, XSS, directory traversal
 - **Security Headers Analysis**: Missing security configurations
 - **Sensitive File Detection**: Exposed configuration files
 
 ### 💥 Exploitation Tools
+
 - **Reverse Shell Generator**: Multiple shell types and encoding options
 - **Web Shell Generation**: PHP, ASP, ASPX, JSP web shells
 - **Payload Encoding**: Base64, URL encoding support
 
 ### 🌐 Web Security
+
 - **Directory Brute Force**: Discover hidden directories and files
 - **Phishing Detection**: URL analysis and reputation checking
 - **HTTP Security Testing**: Comprehensive web vulnerability scanning
 
 ### 📊 Monitoring & Analysis
+
 - **Network Monitoring**: Packet capture and analysis
 - **Port Scan Detection**: Identify scanning attempts
 - **Traffic Analysis**: Protocol distribution and connection tracking
 
 ### 📋 Reporting
+
 - **Multiple Formats**: JSON, XML, CSV, HTML, Text reports
 - **Comprehensive Analysis**: Detailed vulnerability summaries
 - **Professional Output**: Well-formatted security reports
@@ -47,10 +54,12 @@ CyberNox is a comprehensive cybersecurity toolkit designed for penetration testi
 ## 📦 Installation
 
 ### Prerequisites
+
 - Python 3.7 or higher
 - pip package manager
 
 ### Quick Setup
+
 ```bash
 # Clone the repository
 git clone https://github.com/lyhou123/CyberNox.git
@@ -64,19 +73,23 @@ pip install -r requirements.txt
 ```
 
 ### Manual Installation
+
 ```bash
 pip install requests beautifulsoup4 python-whois colorama pyyaml urllib3 dnspython scapy
 ```
 
 ### Windows-Specific Setup
+
 For full functionality on Windows (especially packet capture features):
 
 1. **Install Npcap** (required for packet capture):
+
    - Download from: https://nmap.org/npcap/
    - Install with "WinPcap API compatibility mode" enabled
    - Restart your computer after installation
 
 2. **Install Visual Studio Build Tools** (if you encounter compilation errors):
+
    - Download from: https://visualstudio.microsoft.com/visual-cpp-build-tools/
    - Or install Python packages using pre-compiled wheels
 
@@ -89,6 +102,7 @@ For full functionality on Windows (especially packet capture features):
 ### Basic Commands
 
 #### Reconnaissance
+
 ```bash
 # WHOIS lookup
 python main.py recon --whois example.com
@@ -101,6 +115,7 @@ python main.py recon --dns example.com
 ```
 
 #### Port Scanning
+
 ```bash
 # Scan specific ports
 python main.py scan --target 192.168.1.1 --ports 80 443 22
@@ -110,6 +125,7 @@ python main.py scan --target example.com --ports 21 22 23 25 53 80 443 --threads
 ```
 
 #### Vulnerability Scanning
+
 ```bash
 # Web vulnerability scan
 python main.py vuln --url https://example.com
@@ -119,6 +135,7 @@ python main.py vuln --service apache
 ```
 
 #### Directory Brute Force
+
 ```bash
 # Directory brute force
 python main.py brute --url https://example.com/
@@ -128,6 +145,7 @@ python main.py brute --url https://example.com/ --wordlist custom.txt --extensio
 ```
 
 #### Reverse Shell Generation
+
 ```bash
 # Bash reverse shell
 python main.py shell --type bash --lhost 192.168.1.100 --lport 4444
@@ -140,6 +158,7 @@ python main.py shell --type powershell --lhost 192.168.1.100 --lport 4444
 ```
 
 #### Phishing Detection
+
 ```bash
 # Analyze suspicious URL
 python main.py phishing --url https://suspicious-site.com
@@ -149,6 +168,7 @@ python main.py phishing --url https://example.com --reputation
 ```
 
 #### Service Fingerprinting
+
 ```bash
 # HTTP fingerprinting
 python main.py finger --target example.com --http
@@ -161,6 +181,7 @@ python main.py finger --target 192.168.1.1 --port 22
 ```
 
 #### Network Monitoring
+
 ```bash
 # Basic network monitoring
 python main.py monitor --duration 60
@@ -175,6 +196,7 @@ python main.py monitor --interface eth0 --duration 120
 ### Advanced Usage
 
 #### Output Options
+
 ```bash
 # Save results to file
 python main.py scan --target example.com --ports 80 443 --output scan_results.json
@@ -185,6 +207,7 @@ python main.py scan --target 192.168.1.1 --ports 80 443 --format csv --output re
 ```
 
 #### Verbose Mode
+
 ```bash
 # Enable detailed logging
 python main.py -v scan --target example.com --ports 80 443
@@ -258,6 +281,7 @@ brute:
 ## 🔧 Dependencies
 
 ### Required
+
 - `requests` - HTTP library
 - `beautifulsoup4` - HTML parsing
 - `python-whois` - WHOIS lookups
@@ -266,6 +290,7 @@ brute:
 - `urllib3` - URL handling
 
 ### Optional
+
 - `dnspython` - Advanced DNS operations
 - `scapy` - Network packet manipulation
 
@@ -274,47 +299,60 @@ brute:
 ### Common Issues
 
 #### "No libpcap provider available" Warning
+
 This warning appears on Windows when packet capture libraries aren't installed:
+
 - **Solution**: Install Npcap from https://nmap.org/npcap/
 - **Alternative**: Use basic monitoring features that don't require packet capture
 
 #### Import Errors for Optional Dependencies
+
 Some modules have optional dependencies that enable advanced features:
+
 - `python-whois`: Required for WHOIS lookups
 - `dnspython`: Required for advanced DNS operations
 - `scapy`: Required for packet capture and network monitoring
 
 **Solution**: Install missing dependencies:
+
 ```bash
 pip install python-whois dnspython scapy
 ```
 
 #### Permission Errors on Network Operations
+
 Some network operations require elevated privileges:
+
 - **Windows**: Run Command Prompt/PowerShell as Administrator
 - **Linux/macOS**: Use `sudo` when necessary
 
 #### SSL Certificate Errors
+
 When scanning HTTPS sites, you might encounter SSL verification errors:
+
 - This is expected behavior for security testing
 - The tool automatically disables SSL verification for testing purposes
 
 ## 🛡️ Security Considerations
 
 ### Ethical Use Only
+
 CyberNox is designed for:
+
 - ✅ Authorized penetration testing
 - ✅ Security research and education
 - ✅ Vulnerability assessment of your own systems
 - ✅ Bug bounty programs with proper authorization
 
 ### Prohibited Uses
+
 - ❌ Unauthorized access to systems
 - ❌ Malicious activities
 - ❌ Testing systems without permission
 - ❌ Any illegal activities
 
 ### Disclaimer
+
 This tool is provided for educational and authorized testing purposes only. Users are responsible for ensuring they have proper authorization before using this tool against any systems.
 
 ## 🤝 Contributing
@@ -336,6 +374,7 @@ If you find any bugs or issues, please report them on the [GitHub Issues](https:
 ## 📞 Support
 
 For support and questions:
+
 - Create an issue on GitHub
 - Check the documentation
 - Review the example commands
