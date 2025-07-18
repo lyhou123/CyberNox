@@ -386,5 +386,3 @@ CyberNox is designed to be educational. Each module includes detailed comments a
 ---
 
 **⚠️ Remember: Always obtain proper authorization before testing any systems that you do not own!**
-
----
