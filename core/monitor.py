@@ -8,7 +8,6 @@ import time
 from datetime import datetime
 from collections import defaultdict
 from utils.logger import logger
-from utils.config import config
 
 try:
     from scapy.all import sniff, IP, TCP, UDP, ICMP

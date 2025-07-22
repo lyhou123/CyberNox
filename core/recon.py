@@ -2,9 +2,7 @@
 Reconnaissance module for CyberNox
 """
 
-import socket
-import requests
-import threading
+
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from utils.logger import logger

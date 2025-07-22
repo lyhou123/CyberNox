@@ -2,10 +2,8 @@
 Port scanning and vulnerability scanning module for CyberNox
 """
 
-import socket
+
 import requests
-import threading
-import json
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from utils.logger import logger

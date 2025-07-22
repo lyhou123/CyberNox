@@ -4,7 +4,7 @@ Phishing detection and analysis module for CyberNox
 
 import requests
 import re
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urlparse
 from utils.logger import logger
 from utils.config import config
 
